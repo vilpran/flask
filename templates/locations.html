@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Sandėlio valdymo sistema</title>
+{% endblock %}
+
+
+{% block content %}
+<main>
+    <div class="container-fluid">
+        <h1 class="mt-4">Sandėliai</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="/">Pagrindinis</a></li>
+            <li class="breadcrumb-item active">Sandėliai</li>
+        </ol>
+        <div class="card mb-4">
+            <div class="card-header">Sandėliai</div>
+            <div class="card-body">
+                <div class="card mb-4">
+                    <div class="card-header">Pridėkite naują sandėlį</div>
+                    <div class="card-body">
+                        <form action="/locations/" method="POST" id="location_form">
+                            <label for="location_name" class="col-form-label">Sandėlio pavadinimas:</label>
+                            <input type="text" name="location_name" id="location_name">
+
+                            <label for="loc_capacity" class="col-form-label">Sandėlio talpa:</label>
+                            <input type="number" name="loc_capacity" id="loc_capacity">
+
+                            <label for="loc_storage" class="col-form-label">Temperatūra:</label>
+                            <input type="number" name="loc_storage" id="loc_storage">
+
+                            <input id="submitLocation" value="Pridėti" class="btn btn-primary">
+                        </form>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-table mr-1"></i>
+                    Sandėliai
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        {% if locations|length < 1 %}
+                        <h4>Nėra registruotų sandėlių</h4>
+                        {% else %}
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Warehouse name</th>
+                                    <th>Date Created</th>
+                                    <th>Capacity <span>(&#13221;)</span></th>
+                                    <th>Available Space<span>(&#13221;)</span></th>
+                                    <th>Storage <span>(&#8451;)</span></th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>Location Name</th>
+                                    <th>Date Created</th>
+                                    <th>Capacity <span>(&#13221;)</span></th>
+                                    <th>Available Space<span>(&#13221;)</span></th>
+                                    <th>Storage <span>(&#8451;)</span></th>
+                                    <th>Actions</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+                                {% for location in locations %}
+                                <tr>
+                                    <td>{{ location.location_id }}</td>
+                                    <td>{{ location.date_created.date() }}</td>
+                                    <td>{{ location.capacity_m3 }}</td>
+                                    <td>{{ location.available_space_m3 }}</td>
+                                    <td>{{ location.storage_c }}</td>
+                                    <td>
+                                        <a href="/delete-location/{{ location.location_id }}">Delete</a>
+                                        <br>
+                                        <a href="/update-location/{{ location.location_id }}">Update</a>  
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
+                </div>
+            </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

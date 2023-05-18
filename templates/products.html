@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Sandėlio valdymo sistema</title>
+{% endblock %}
+
+
+{% block content %}
+<main>
+    <div class="container-fluid">
+        <h1 class="mt-4">Produktai</h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="/">Pagrindinis</a></li>
+            <li class="breadcrumb-item active">Produktai</li>
+        </ol>
+        <div class="card mb-4">
+            <div class="card-header">Produktai</div>
+            <div class="card-body">
+                <div class="card mb-4">
+                    <div class="card-header">Pridėkite naują produktą</div>
+                    <div class="card-body">
+                        <form action="/products/" method="POST" id="product_form">
+                            <label for="product_name" class="col-form-label">Įveskite produkto pavadinimą: </label>
+                            <input type="text" name="product_name" id="product_name">
+                            <label for="production_date" class="col-form-label">Įveskite produkto pagaminimo datą: </label>
+                            <input type="date" name="production_date" id="production_date">
+                            <br>
+                            <label for="use_by" class="col-form-label">Tinka vartoti iki: </label>
+                            <input type="date" name="use_by" id="use_by">
+                            <label for="storage" class="col-form-label">Laikymo sąlygos: </label>
+                            <input type="number" name="storage" id="storage">
+                            &nbsp;&nbsp;
+                            <br>
+                            <br>
+                            <input id="submitProduct" value="Pridėti" class="btn btn-primary">
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">Produkto galiojimo tikrinimas</div>
+                    <div class="card-body">
+                    <!-- <div class="form-group"> -->
+                        <label for="p_name" class="col-form-label">Pasirinkite produkto tipą: </label>
+                        <select id="p_name" name="p_name" class="form-control">
+                            <option selected value="">Pasirinkti...</option>
+                            {% for item in food_items %}
+                            <option value = "{{food_items[item].Name}}"> {{ food_items[item].Name }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <!-- visibility: hidden -->
+                        <div id="type" style="visibility: hidden; display: none">
+                            <label for="p_type" class="col-form-label">Pasirinkite produktą: </label>
+                            <select id="p_type" name="p_type" class="form-control">
+                                <option selected value="">Pasirinkti...</option>
+                            </select>
+                        </div>
+
+                        <script>
+                            // Get references to the two dropdowns
+                            const pNameDropdown = document.querySelector('#p_name');
+                            const pTypeDropdown = document.querySelector('#p_type');
+                            const foodItems = JSON.parse('{{ food_items|tojson|safe }}');
+                            //const foodItems;
+                            const type = document.querySelector('#type')
+                        
+                            let selectedFoodItem;
+                            let subname;
+                            // Define a function to update the pTypeDropdown when the pNameDropdown changes
+                            pNameDropdown.addEventListener('change', function() {
+                                // Get the selected value from the pNameDropdown
+                                const selectedValue = pNameDropdown.value;
+                        
+                                // Clear any existing options from the pTypeDropdown
+                                pTypeDropdown.innerHTML = '<option value="">Pasirinkti...</option>';
+                        
+                                // If a value is selected, find the corresponding food_item and add its Name_subtitle options to the pTypeDropdown
+                                if (selectedValue) {
+
+                                    //const foodItems = JSON.parse('{{ food_items|tojson|safe }}');
+                                    selectedFoodItem = foodItems[selectedValue]
+                                    
+                                    const food_subtitle = foodItems[selectedValue]['products'].map(product => product['Name_subtitle']);
+
+                                     if (selectedFoodItem) {
+                                        if(food_subtitle[0] != null){
+
+                                        type.style.visibility = 'visible'
+                                        type.style.display = 'block'
+
+                                        selectedFoodItem.products.forEach((product)=> {
+                                            const option = document.createElement('option');
+                                             option.value = product.Name_subtitle;
+                                             option.text = product.Name_subtitle;
+                                             pTypeDropdown.appendChild(option);
+                                             subname = selectedFoodItem.Name;
+                                        })
+                                        }
+                                        else{
+                                            type.style.display = "none";
+                                            type.style.visibility = 'hidden'
+                                        }
+                                     }
+                                }
+                            });
+
+                            function find_item() {
+                                const selected_item = pNameDropdown.value;
+                               
+                                if(type.style.visibility != 'hidden'){
+                                    const selected_product = selectedFoodItem.products.find(product => product.Name_subtitle === pTypeDropdown.value);
+                                    if(selected_product.DOP_Refrigerate_Max != null && selected_product.DOP_Refrigerate_Metric != null ){
+                                        document.getElementById("item_info").innerHTML = "Maximum storage in a fridge is " + selected_product.DOP_Refrigerate_Max + " " + selected_product.DOP_Refrigerate_Metric;
+                                    }
+                                    else{
+                                         alert("Requested information is not available")
+                                    }
+                                }
+                                else{
+                                    const dopRefrigerateMax = foodItems[selected_item]['products'][0]['DOP_Refrigerate_Max'];
+                                    const dopRefrigerateMetric = foodItems[selected_item]['products'][0]['DOP_Refrigerate_Metric'];
+                                    if(dopRefrigerateMax != null && dopRefrigerateMetric != null){
+                                        document.getElementById("item_info").innerHTML = "Maximum storage in a fridge is " + dopRefrigerateMax + " " + dopRefrigerateMetric;
+                                    }
+                                    else{
+                                        alert("Requested information is not available")
+                                    }
+                                }
+                            }
+                        </script>
+
+
+                        <br>
+                        <!-- <input id="check_item" value="Tikrinti" class="btn btn-primary"> -->
+                        <button type="button" onclick="find_item()" class="btn btn-primary">Tikrinti</button>
+                        <div class = "food_info">
+                            <br>
+                            <p id="item_info"></p>
+                            <p id="item_info2"></p>
+                            <br>
+                        </div>
+                    </div>
+                </div>
+                
+
+                <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-table mr-1"></i>
+                    Produktų lentelė
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        {% if products|length < 1 %}
+                        <h4>There are no Products, add one above</h4>
+                        {% else %}
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Date Created</th>
+                                    <th>Production date</th>
+                                    <th>Use by</th>
+                                    <th>Storage<span>(&#8451;)</span></th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Date</th>
+                                    <th>Production date</th>
+                                    <th>Use by</th>
+                                    <th>Storage<span>(&#8451;)</span></th>
+                                    <th>Actions</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td>{{ product.product_id }}</td>
+                                    <td>{{ product.date_created.date() }}</td>
+                                    <td>{{ product.production_date }}</td>
+                                    <td>{{ product.use_by}}</td>
+                                    <td>{{ product.storage}}</td>
+                                    <td>
+                                        <a href="/delete-product/{{ product.product_id }}">Delete</a>
+                                        <br>
+                                        <a href="/update-product/{{ product.product_id }}">Update</a>  
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
+                </div>
+            </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
